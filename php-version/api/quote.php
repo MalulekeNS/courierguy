@@ -23,8 +23,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit();
 }
 
-// Load configuration
+// Load configuration and database
 require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/../database/init.php';
 
 // Get request body
 $input = file_get_contents('php://input');
@@ -128,34 +129,5 @@ try {
         $cheapestPrice = !empty($prices) ? min($prices) : null;
     }
     
-    // Log to database (optional - fire and forget)
-    logQuoteRequest($suburb, $postalCode, $rfCode, $weight, count($quoteData['services']), $cheapestPrice);
-    
-    // Return result
-    echo json_encode($quoteData);
-    
-} catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode(['error' => $e->getMessage()]);
-    
-    // Log error
-    error_log('Quote API Error: ' . $e->getMessage());
-}
-
-/**
- * Log quote request to database (optional)
- */
-function logQuoteRequest($suburb, $postalCode, $rfCode, $weight, $servicesCount, $cheapestPrice) {
-    // This would connect to your database to log requests
-    // Implemented as fire-and-forget for performance
-    // Example with PDO:
-    /*
-    try {
-        $pdo = new PDO(DB_DSN, DB_USER, DB_PASS);
-        $stmt = $pdo->prepare('INSERT INTO quote_requests (suburb, postal_code, rf_code, weight, services_count, cheapest_price) VALUES (?, ?, ?, ?, ?, ?)');
-        $stmt->execute([$suburb, $postalCode, $rfCode, $weight, $servicesCount, $cheapestPrice]);
-    } catch (PDOException $e) {
-        error_log('Database log error: ' . $e->getMessage());
-    }
-    */
-}
+    // Log to SQLite database
+    logQuoteRequestToDb($suburb, $postalCode, $rfCode, $weight, count($quoteData['services']), $cheapestPrice);

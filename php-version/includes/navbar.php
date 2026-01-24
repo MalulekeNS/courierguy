@@ -40,6 +40,11 @@ $currentPage = basename($_SERVER['PHP_SELF']);
                         <i class="bi bi-calculator me-1"></i>Get Quote
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link <?php echo $currentPage === 'analytics.php' ? 'active' : ''; ?>" href="analytics.php">
+                        <i class="bi bi-graph-up me-1"></i>Analytics
+                    </a>
+                </li>
             </ul>
         </div>
     </div>
