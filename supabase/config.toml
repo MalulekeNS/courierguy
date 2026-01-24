@@ -1,0 +1,7 @@
+project_id = "rlwejxvdvcuasmboghdb"
+
+[functions.fastway-track]
+verify_jwt = false
+
+[functions.fastway-quote]
+verify_jwt = false
