@@ -37,6 +37,48 @@ This document addresses the senior-level architecture and design questions for t
 3. **Maintainability**: Related code is grouped together
 4. **Security**: API keys are isolated in edge functions, never exposed to frontend
 
+### Data Persistence Layer
+
+The application includes a SQLite database for logging form submissions:
+
+```
+├── database/
+│   ├── init.php           # PDO connection and table initialization
+│   ├── .htaccess          # Web access protection
+│   └── database.sqlite    # Auto-generated on first request
+```
+
+**Database Schema:**
+
+```sql
+-- Tracking searches log
+CREATE TABLE tracking_searches (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    tracking_number TEXT NOT NULL,
+    has_result INTEGER DEFAULT 0,
+    result_status TEXT,
+    ip_address TEXT,
+    user_agent TEXT,
+    search_timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Quote requests log
+CREATE TABLE quote_requests (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    suburb TEXT NOT NULL,
+    postal_code TEXT NOT NULL,
+    rf_code TEXT DEFAULT 'JNB',
+    weight REAL NOT NULL,
+    services_count INTEGER DEFAULT 0,
+    cheapest_price REAL,
+    ip_address TEXT,
+    user_agent TEXT,
+    request_timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+The database file is auto-created by PDO when the first request is made. No manual setup required.
+
 ---
 
 ## 2. Separation of Layers

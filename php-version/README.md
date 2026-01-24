@@ -17,11 +17,16 @@ php-version/
 ├── index.php              # Home page
 ├── track.php              # Track parcel page
 ├── quote.php              # Get quote page
+├── analytics.php          # Analytics dashboard
 ├── api/
 │   ├── track.php          # Tracking API endpoint
 │   └── quote.php          # Quote API endpoint
 ├── config/
 │   └── config.php         # Application configuration
+├── database/
+│   ├── init.php           # SQLite database initialization
+│   ├── .htaccess          # Protect database files from web access
+│   └── database.sqlite    # Auto-generated SQLite database
 ├── includes/
 │   ├── navbar.php         # Navigation component
 │   └── footer.php         # Footer component
@@ -39,6 +44,7 @@ php-version/
 
 - PHP 8.0 or higher
 - cURL extension enabled
+- PDO SQLite extension enabled
 - Web server (Apache/Nginx)
 
 ### 2. Configuration
@@ -67,12 +73,14 @@ php-version/
 - ✅ AJAX form submissions
 - ✅ Input validation (client & server-side)
 - ✅ Error handling with user-friendly messages
+- ✅ SQLite database for form submission logging
 
 ### Bonus Features
 - ✅ Client-side caching (2-5 minutes)
 - ✅ Quote result sorting (price, weight, name)
 - ✅ Tooltips for form fields
 - ✅ Manual cache refresh
+- ✅ Analytics dashboard for viewing stored data
 
 ## API Endpoints
 

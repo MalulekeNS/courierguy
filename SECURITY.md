@@ -37,6 +37,14 @@ The API key is **never exposed to the frontend**. It is stored and accessed excl
 
 4. **CORS Configuration**: Edge functions only accept requests from authorized origins
 
+5. **Database File Protection**: SQLite database secured via `.htaccess`
+   ```apache
+   # database/.htaccess - Deny all access
+   <Files "*">
+       Require all denied
+   </Files>
+   ```
+
 ---
 
 ## 8. Input Validation and Sanitization
