@@ -1,0 +1,380 @@
+/**
+ * Fastway Courier - Custom Styles
+ * Built with Bootstrap 5 + Custom CSS
+ */
+
+/* ===== CSS Variables (Design Tokens) ===== */
+:root {
+    --primary: #1e293b;
+    --primary-dark: #0f172a;
+    --accent: #f97316;
+    --accent-light: #fb923c;
+    --accent-soft: rgba(249, 115, 22, 0.1);
+    --success: #16a34a;
+    --info: #0ea5e9;
+    --warning: #eab308;
+    --danger: #dc2626;
+    --text-dark: #1e293b;
+    --text-muted: #64748b;
+    --bg-light: #f8fafc;
+    --bg-white: #ffffff;
+    --border-color: #e2e8f0;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    --radius: 0.75rem;
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-body: 'Inter', sans-serif;
+}
+
+/* ===== Base Styles ===== */
+body {
+    font-family: var(--font-body);
+    color: var(--text-dark);
+    background-color: var(--bg-light);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
+
+h1, h2, h3, h4, h5, h6, .fw-bold {
+    font-family: var(--font-display);
+}
+
+/* ===== Navbar ===== */
+.navbar {
+    background-color: var(--primary) !important;
+}
+
+.logo-icon {
+    width: 40px;
+    height: 40px;
+    background-color: var(--accent);
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    color: white;
+}
+
+.nav-link {
+    padding: 0.5rem 1rem !important;
+    border-radius: 0.5rem;
+    transition: background-color 0.2s ease;
+}
+
+.nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.nav-link.active {
+    background-color: rgba(255, 255, 255, 0.15);
+    font-weight: 500;
+}
+
+/* ===== Hero Section ===== */
+.hero-section {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    position: relative;
+    padding: 5rem 0 8rem;
+    overflow: hidden;
+}
+
+.hero-pattern {
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v6h6v-6h-6zm0 0v-6h-6v6h6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+.hero-wave {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    line-height: 0;
+}
+
+.hero-wave svg {
+    width: 100%;
+    height: auto;
+}
+
+.text-accent {
+    color: var(--accent) !important;
+}
+
+/* ===== Cards ===== */
+.card {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.shadow-card {
+    box-shadow: var(--shadow-md);
+}
+
+.shadow-card:hover {
+    box-shadow: var(--shadow-lg);
+}
+
+.feature-card:hover {
+    transform: translateY(-4px);
+}
+
+.benefit-card:hover .benefit-icon {
+    background-color: var(--accent);
+    color: white;
+}
+
+/* ===== Feature Icons ===== */
+.feature-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+}
+
+.bg-accent-soft {
+    background-color: var(--accent-soft);
+}
+
+.benefit-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 0.75rem;
+    background-color: var(--accent-soft);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+/* ===== Buttons ===== */
+.btn-accent {
+    background-color: var(--accent);
+    border-color: var(--accent);
+    color: white;
+    font-weight: 600;
+    padding: 0.625rem 1.5rem;
+    border-radius: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.btn-accent:hover {
+    background-color: var(--accent-light);
+    border-color: var(--accent-light);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px 0 rgba(249, 115, 22, 0.35);
+}
+
+.btn-accent:focus {
+    box-shadow: 0 0 0 0.25rem rgba(249, 115, 22, 0.25);
+}
+
+.btn-accent:disabled {
+    background-color: var(--accent);
+    border-color: var(--accent);
+    opacity: 0.65;
+}
+
+/* ===== Forms ===== */
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 0.25rem rgba(249, 115, 22, 0.25);
+}
+
+/* ===== Status Card ===== */
+.status-card {
+    background: linear-gradient(135deg, var(--accent-soft) 0%, rgba(249, 115, 22, 0.05) 100%);
+}
+
+.status-card .border-accent {
+    border-left: 4px solid var(--accent) !important;
+}
+
+.status-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background-color: rgba(249, 115, 22, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: var(--accent);
+}
+
+.status-icon.success {
+    background-color: rgba(22, 163, 74, 0.2);
+    color: var(--success);
+}
+
+.status-icon.info {
+    background-color: rgba(14, 165, 233, 0.2);
+    color: var(--info);
+}
+
+/* ===== Timeline ===== */
+.timeline {
+    position: relative;
+    padding-left: 2.5rem;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 0.75rem;
+    top: 0.5rem;
+    bottom: 0.5rem;
+    width: 2px;
+    background-color: var(--border-color);
+}
+
+.timeline-item {
+    position: relative;
+    padding-bottom: 1.5rem;
+}
+
+.timeline-item:last-child {
+    padding-bottom: 0;
+}
+
+.timeline-dot {
+    position: absolute;
+    left: -2rem;
+    top: 0.25rem;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: var(--bg-white);
+    border: 2px solid var(--border-color);
+}
+
+.timeline-item:first-child .timeline-dot {
+    background-color: var(--accent);
+    border-color: var(--accent);
+}
+
+.timeline-item:first-child .timeline-dot::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    background-color: var(--accent);
+    opacity: 0.3;
+    animation: pulse 2s infinite;
+}
+
+.timeline-content {
+    background-color: var(--bg-light);
+    border-radius: var(--radius);
+    padding: 1rem;
+}
+
+/* ===== Service Cards ===== */
+.service-card {
+    overflow: hidden;
+    transition: box-shadow 0.3s ease;
+}
+
+.service-card:hover {
+    box-shadow: var(--shadow-lg);
+}
+
+.service-indicator {
+    width: 4px;
+    background-color: var(--accent);
+}
+
+.badge-cheapest {
+    background-color: rgba(22, 163, 74, 0.2);
+    color: var(--success);
+    font-weight: 500;
+}
+
+/* ===== Animations ===== */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { 
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to { 
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% { 
+        opacity: 0.3;
+        transform: scale(1);
+    }
+    50% { 
+        opacity: 0.1;
+        transform: scale(1.5);
+    }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+
+.animate-slide-up {
+    animation: slideUp 0.5s ease-out;
+}
+
+/* ===== Utilities ===== */
+.font-monospace {
+    font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+}
+
+.text-success {
+    color: var(--success) !important;
+}
+
+.text-info {
+    color: var(--info) !important;
+}
+
+.bg-success-soft {
+    background-color: rgba(22, 163, 74, 0.1);
+}
+
+/* ===== Responsive Adjustments ===== */
+@media (max-width: 767.98px) {
+    .hero-section {
+        padding: 3rem 0 5rem;
+    }
+    
+    .hero-section h1 {
+        font-size: 2rem;
+    }
+    
+    .feature-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 1.5rem;
+    }
+}
+
+/* ===== Footer ===== */
+.footer {
+    margin-top: auto;
+}
