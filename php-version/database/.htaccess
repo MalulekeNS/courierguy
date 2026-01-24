@@ -1,0 +1,10 @@
+# Deny all access to database files
+<Files "*">
+    Require all denied
+</Files>
+
+# For Apache 2.2 compatibility
+<IfModule !mod_authz_core.c>
+    Order deny,allow
+    Deny from all
+</IfModule>

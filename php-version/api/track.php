@@ -23,8 +23,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit();
 }
 
-// Load configuration
+// Load configuration and database
 require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/../database/init.php';
 
 // Get request body
 $input = file_get_contents('php://input');
@@ -99,34 +100,5 @@ try {
         exit();
     }
     
-    // Log to database (optional - fire and forget)
-    logTrackingSearch($trackingNumber, true, $trackingData['Scans'][0]['StatusDescription'] ?? null);
-    
-    // Return result
-    echo json_encode($trackingData);
-    
-} catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode(['error' => $e->getMessage()]);
-    
-    // Log error
-    error_log('Tracking API Error: ' . $e->getMessage());
-}
-
-/**
- * Log tracking search to database (optional)
- */
-function logTrackingSearch($trackingNumber, $hasResult, $status) {
-    // This would connect to your database to log searches
-    // Implemented as fire-and-forget for performance
-    // Example with PDO:
-    /*
-    try {
-        $pdo = new PDO(DB_DSN, DB_USER, DB_PASS);
-        $stmt = $pdo->prepare('INSERT INTO tracking_searches (tracking_number, has_result, result_status) VALUES (?, ?, ?)');
-        $stmt->execute([$trackingNumber, $hasResult ? 1 : 0, $status]);
-    } catch (PDOException $e) {
-        error_log('Database log error: ' . $e->getMessage());
-    }
-    */
-}
+    // Log to SQLite database
+    logTrackingSearchToDb($trackingNumber, true, $trackingData['Scans'][0]['StatusDescription'] ?? null);
