@@ -47,6 +47,7 @@ const roleColor: Record<AppRole, string> = {
 const AdminUsers = () => {
   const { user: me } = useAuth();
   const [profiles, setProfiles] = useState<ProfileRow[]>([]);
+  const [authInfo, setAuthInfo] = useState<Record<string, AuthInfo>>({});
   const [rolesByUser, setRolesByUser] = useState<Record<string, AppRole[]>>({});
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -54,12 +55,14 @@ const AdminUsers = () => {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [{ data: profs, error: pErr }, { data: roles, error: rErr }] = await Promise.all([
+    const [{ data: profs, error: pErr }, { data: roles, error: rErr }, { data: auths, error: aErr }] = await Promise.all([
       supabase.from("profiles").select("user_id, full_name, phone, franchise_code, created_at").order("created_at", { ascending: false }),
       supabase.from("user_roles").select("user_id, role"),
+      supabase.rpc("admin_list_users"),
     ]);
     if (pErr) toast({ title: "Failed to load users", description: pErr.message, variant: "destructive" });
     if (rErr) toast({ title: "Failed to load roles", description: rErr.message, variant: "destructive" });
+    if (aErr) toast({ title: "Failed to load auth info", description: aErr.message, variant: "destructive" });
 
     setProfiles((profs ?? []) as ProfileRow[]);
     const map: Record<string, AppRole[]> = {};
@@ -67,6 +70,9 @@ const AdminUsers = () => {
       (map[r.user_id] ||= []).push(r.role);
     }
     setRolesByUser(map);
+    const aMap: Record<string, AuthInfo> = {};
+    for (const a of ((auths ?? []) as AuthInfo[])) aMap[a.user_id] = a;
+    setAuthInfo(aMap);
     setLoading(false);
   }, []);
 
@@ -75,13 +81,19 @@ const AdminUsers = () => {
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return profiles;
-    return profiles.filter((p) =>
-      (p.full_name ?? "").toLowerCase().includes(q) ||
-      (p.phone ?? "").toLowerCase().includes(q) ||
-      (p.franchise_code ?? "").toLowerCase().includes(q) ||
-      p.user_id.toLowerCase().includes(q),
-    );
-  }, [profiles, search]);
+    return profiles.filter((p) => {
+      const a = authInfo[p.user_id];
+      return (
+        (p.full_name ?? "").toLowerCase().includes(q) ||
+        (p.phone ?? "").toLowerCase().includes(q) ||
+        (p.franchise_code ?? "").toLowerCase().includes(q) ||
+        p.user_id.toLowerCase().includes(q) ||
+        (a?.email ?? "").toLowerCase().includes(q)
+      );
+    });
+  }, [profiles, search, authInfo]);
+
+  const fmtDate = (s?: string | null) => s ? new Date(s).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) : "—";
 
   const toggleRole = async (userId: string, role: AppRole, currently: boolean) => {
     if (userId === me?.id && role === "admin" && currently) {
