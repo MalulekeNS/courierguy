@@ -11,7 +11,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, AppRole } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
-import { Search, RefreshCw, ShieldCheck, UserCog } from "lucide-react";
+import { Search, RefreshCw, ShieldCheck, UserCog, MailCheck, MailX, PhoneCall, PhoneOff } from "lucide-react";
 
 const ALL_ROLES: AppRole[] = ["customer", "driver", "franchisee", "admin"];
 
@@ -20,6 +20,15 @@ interface ProfileRow {
   full_name: string | null;
   phone: string | null;
   franchise_code: string | null;
+  created_at: string;
+}
+
+interface AuthInfo {
+  user_id: string;
+  email: string | null;
+  email_confirmed_at: string | null;
+  phone: string | null;
+  phone_confirmed_at: string | null;
   created_at: string;
 }
 
