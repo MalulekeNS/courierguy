@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Search, Package, MapPin, Calendar, CheckCircle, AlertCircle, Clock, HelpCircle, RefreshCw } from "lucide-react";
 import Layout from "@/components/Layout";
 import LoadingSpinner from "@/components/LoadingSpinner";
@@ -10,10 +11,21 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useTrackingCache, TrackingResult } from "@/hooks/useTrackingCache";
 
 const TrackParcel = () => {
-  const [trackingNumber, setTrackingNumber] = useState("");
-  const [searchNumber, setSearchNumber] = useState<string | null>(null);
+  const [searchParams] = useSearchParams();
+  const initial = searchParams.get("n") ?? "";
+  const [trackingNumber, setTrackingNumber] = useState(initial);
+  const [searchNumber, setSearchNumber] = useState<string | null>(initial || null);
 
   const { data: result, isLoading: loading, error, isFetching, invalidateCache } = useTrackingCache(searchNumber);
+
+  useEffect(() => {
+    const n = searchParams.get("n");
+    if (n && n !== searchNumber) {
+      setTrackingNumber(n);
+      setSearchNumber(n);
+    }
+  }, [searchParams, searchNumber]);
+
 
   const handleTrack = async (e: React.FormEvent) => {
     e.preventDefault();
