@@ -14,6 +14,84 @@ export type Database = {
   }
   public: {
     Tables: {
+      addresses: {
+        Row: {
+          city: string | null
+          contact_name: string
+          contact_phone: string
+          created_at: string
+          id: string
+          is_default: boolean
+          label: string
+          postal_code: string
+          province: string | null
+          street: string
+          suburb: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          city?: string | null
+          contact_name: string
+          contact_phone: string
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          label: string
+          postal_code: string
+          province?: string | null
+          street: string
+          suburb: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          city?: string | null
+          contact_name?: string
+          contact_phone?: string
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          label?: string
+          postal_code?: string
+          province?: string | null
+          street?: string
+          suburb?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          franchise_code: string | null
+          full_name: string | null
+          id: string
+          phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          franchise_code?: string | null
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          franchise_code?: string | null
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       quote_requests: {
         Row: {
           cheapest_price: number | null
@@ -47,6 +125,131 @@ export type Database = {
         }
         Relationships: []
       }
+      shipment_events: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          location: string | null
+          recorded_by: string | null
+          shipment_id: string
+          status: Database["public"]["Enums"]["shipment_status"]
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          location?: string | null
+          recorded_by?: string | null
+          shipment_id: string
+          status: Database["public"]["Enums"]["shipment_status"]
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          location?: string | null
+          recorded_by?: string | null
+          shipment_id?: string
+          status?: Database["public"]["Enums"]["shipment_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shipment_events_shipment_id_fkey"
+            columns: ["shipment_id"]
+            isOneToOne: false
+            referencedRelation: "shipments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shipments: {
+        Row: {
+          assigned_driver_id: string | null
+          created_at: string
+          customer_id: string
+          id: string
+          paid: boolean
+          parcel_description: string | null
+          pickup_scheduled_at: string | null
+          price_zar: number
+          receiver_franchise_code: string | null
+          receiver_name: string
+          receiver_phone: string
+          receiver_postal_code: string
+          receiver_street: string
+          receiver_suburb: string
+          sender_franchise_code: string
+          sender_name: string
+          sender_phone: string
+          sender_postal_code: string
+          sender_street: string
+          sender_suburb: string
+          service_name: string
+          service_type: string | null
+          status: Database["public"]["Enums"]["shipment_status"]
+          updated_at: string
+          waybill_number: string
+          weight_kg: number
+        }
+        Insert: {
+          assigned_driver_id?: string | null
+          created_at?: string
+          customer_id: string
+          id?: string
+          paid?: boolean
+          parcel_description?: string | null
+          pickup_scheduled_at?: string | null
+          price_zar: number
+          receiver_franchise_code?: string | null
+          receiver_name: string
+          receiver_phone: string
+          receiver_postal_code: string
+          receiver_street: string
+          receiver_suburb: string
+          sender_franchise_code?: string
+          sender_name: string
+          sender_phone: string
+          sender_postal_code: string
+          sender_street: string
+          sender_suburb: string
+          service_name: string
+          service_type?: string | null
+          status?: Database["public"]["Enums"]["shipment_status"]
+          updated_at?: string
+          waybill_number: string
+          weight_kg: number
+        }
+        Update: {
+          assigned_driver_id?: string | null
+          created_at?: string
+          customer_id?: string
+          id?: string
+          paid?: boolean
+          parcel_description?: string | null
+          pickup_scheduled_at?: string | null
+          price_zar?: number
+          receiver_franchise_code?: string | null
+          receiver_name?: string
+          receiver_phone?: string
+          receiver_postal_code?: string
+          receiver_street?: string
+          receiver_suburb?: string
+          sender_franchise_code?: string
+          sender_name?: string
+          sender_phone?: string
+          sender_postal_code?: string
+          sender_street?: string
+          sender_suburb?: string
+          service_name?: string
+          service_type?: string | null
+          status?: Database["public"]["Enums"]["shipment_status"]
+          updated_at?: string
+          waybill_number?: string
+          weight_kg?: number
+        }
+        Relationships: []
+      }
       tracking_searches: {
         Row: {
           has_result: boolean | null
@@ -71,15 +274,54 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_waybill: { Args: never; Returns: string }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      user_franchise: { Args: { _user_id: string }; Returns: string }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "customer" | "driver" | "franchisee" | "admin"
+      shipment_status:
+        | "pending_payment"
+        | "booked"
+        | "awaiting_pickup"
+        | "collected"
+        | "in_transit"
+        | "out_for_delivery"
+        | "delivered"
+        | "failed_delivery"
+        | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -206,6 +448,19 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["customer", "driver", "franchisee", "admin"],
+      shipment_status: [
+        "pending_payment",
+        "booked",
+        "awaiting_pickup",
+        "collected",
+        "in_transit",
+        "out_for_delivery",
+        "delivered",
+        "failed_delivery",
+        "cancelled",
+      ],
+    },
   },
 } as const

@@ -1,36 +1,46 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { Package, Calculator, Menu, X, Home } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Package, Calculator, Menu, X, Home, LayoutDashboard, LogOut, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
 
-  const navItems = [
+  const publicItems = [
     { path: "/", label: "Home", icon: Home },
     { path: "/track", label: "Track Parcel", icon: Package },
     { path: "/quote", label: "Get Quote", icon: Calculator },
   ];
 
+  const authedItems = [
+    { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  ];
+
+  const navItems = user ? [...publicItems, ...authedItems] : publicItems;
+
   const isActive = (path: string) => location.pathname === path;
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
 
   return (
     <nav className="sticky top-0 z-50 w-full bg-primary shadow-lg">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
-          {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent">
               <Package className="h-6 w-6 text-accent-foreground" />
             </div>
-            <span className="font-display text-xl font-bold text-primary-foreground">
-              Fastway
-            </span>
+            <span className="font-display text-xl font-bold text-primary-foreground">Fastway</span>
           </Link>
 
-          {/* Desktop Navigation */}
           <div className="hidden items-center gap-1 md:flex">
             {navItems.map((item) => (
               <Link key={item.path} to={item.path}>
@@ -46,9 +56,25 @@ const Navbar = () => {
                 </Button>
               </Link>
             ))}
+            {user ? (
+              <Button
+                variant="ghost"
+                onClick={handleSignOut}
+                className="gap-2 text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground"
+              >
+                <LogOut className="h-4 w-4" />
+                Log Out
+              </Button>
+            ) : (
+              <Link to="/auth">
+                <Button variant="accent" className="gap-2">
+                  <LogIn className="h-4 w-4" />
+                  Log In
+                </Button>
+              </Link>
+            )}
           </div>
 
-          {/* Mobile Menu Button */}
           <Button
             variant="ghost"
             size="icon"
@@ -59,7 +85,6 @@ const Navbar = () => {
           </Button>
         </div>
 
-        {/* Mobile Navigation */}
         {isOpen && (
           <div className="animate-fade-in border-t border-primary-foreground/10 pb-4 md:hidden">
             {navItems.map((item) => (
@@ -76,6 +101,23 @@ const Navbar = () => {
                 </Button>
               </Link>
             ))}
+            {user ? (
+              <Button
+                variant="ghost"
+                onClick={() => { setIsOpen(false); handleSignOut(); }}
+                className="w-full justify-start gap-3 text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground"
+              >
+                <LogOut className="h-5 w-5" />
+                Log Out
+              </Button>
+            ) : (
+              <Link to="/auth" onClick={() => setIsOpen(false)}>
+                <Button variant="accent" className="w-full justify-start gap-3">
+                  <LogIn className="h-5 w-5" />
+                  Log In
+                </Button>
+              </Link>
+            )}
           </div>
         )}
       </div>
