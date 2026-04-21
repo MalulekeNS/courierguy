@@ -11,6 +11,8 @@ import GetQuote from "./pages/GetQuote";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import BookShipment from "./pages/BookShipment";
+import Operations from "./pages/Operations";
+import DriverJobs from "./pages/DriverJobs";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,6 +42,22 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <BookShipment />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/operations"
+              element={
+                <ProtectedRoute requireRole={["admin", "franchisee"]}>
+                  <Operations />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/driver"
+              element={
+                <ProtectedRoute requireRole="driver">
+                  <DriverJobs />
                 </ProtectedRoute>
               }
             />

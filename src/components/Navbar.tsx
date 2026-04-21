@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Package, Calculator, Menu, X, Home, LayoutDashboard, LogOut, LogIn } from "lucide-react";
+import { Package, Calculator, Menu, X, Home, LayoutDashboard, LogOut, LogIn, Truck, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -9,7 +9,7 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const { user, roles, signOut } = useAuth();
 
   const publicItems = [
     { path: "/", label: "Home", icon: Home },
@@ -21,7 +21,11 @@ const Navbar = () => {
     { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   ];
 
-  const navItems = user ? [...publicItems, ...authedItems] : publicItems;
+  const roleItems: { path: string; label: string; icon: typeof Home }[] = [];
+  if (roles.includes("driver")) roleItems.push({ path: "/driver", label: "My Jobs", icon: Truck });
+  if (roles.includes("admin") || roles.includes("franchisee")) roleItems.push({ path: "/operations", label: "Operations", icon: Building2 });
+
+  const navItems = user ? [...publicItems, ...authedItems, ...roleItems] : publicItems;
 
   const isActive = (path: string) => location.pathname === path;
 
