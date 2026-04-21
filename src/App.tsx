@@ -13,6 +13,7 @@ import Dashboard from "./pages/Dashboard";
 import BookShipment from "./pages/BookShipment";
 import Operations from "./pages/Operations";
 import DriverJobs from "./pages/DriverJobs";
+import AdminUsers from "./pages/AdminUsers";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -58,6 +59,14 @@ const App = () => (
               element={
                 <ProtectedRoute requireRole="driver">
                   <DriverJobs />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/users"
+              element={
+                <ProtectedRoute requireRole="admin">
+                  <AdminUsers />
                 </ProtectedRoute>
               }
             />
