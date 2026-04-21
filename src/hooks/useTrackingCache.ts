@@ -24,7 +24,56 @@ interface TrackingResult {
   HasDScan?: boolean;
 }
 
+async function fetchInternalShipment(waybill: string): Promise<TrackingResult> {
+  const { data: shipment, error: sErr } = await supabase
+    .from("shipments")
+    .select("waybill_number, status, sender_franchise_code, receiver_franchise_code, receiver_suburb, created_at")
+    .eq("waybill_number", waybill)
+    .maybeSingle();
+  if (sErr) throw new Error("Unable to look up shipment.");
+  if (!shipment) throw new Error("No shipment found for this waybill number.");
+
+  const { data: events } = await supabase
+    .from("shipment_events")
+    .select("status, description, location, created_at")
+    .eq("shipment_id", (await supabase.from("shipments").select("id").eq("waybill_number", waybill).maybeSingle()).data?.id ?? "")
+    .order("created_at", { ascending: false });
+
+  const scans: TrackingEvent[] = [
+    {
+      Description: shipment.status.replace(/_/g, " "),
+      Date: new Date(shipment.created_at).toLocaleDateString(),
+      Time: new Date(shipment.created_at).toLocaleTimeString(),
+      Franchise: shipment.sender_franchise_code,
+      Type: "Booked",
+      StatusDescription: shipment.status,
+    },
+    ...(events ?? []).map((e) => ({
+      Description: e.description,
+      Date: new Date(e.created_at).toLocaleDateString(),
+      Time: new Date(e.created_at).toLocaleTimeString(),
+      Franchise: e.location ?? shipment.sender_franchise_code,
+      Type: e.status,
+      StatusDescription: e.status,
+    })),
+  ];
+
+  return {
+    LabelNumber: shipment.waybill_number,
+    Status: shipment.status,
+    Scans: scans,
+    PickupFranchise: shipment.sender_franchise_code,
+    DeliveryFranchise: shipment.receiver_franchise_code ?? undefined,
+    HasDScan: shipment.status === "delivered",
+  };
+}
+
 async function fetchTracking(trackingNumber: string): Promise<TrackingResult> {
+  // Internal waybill format
+  if (/^FW-/i.test(trackingNumber)) {
+    return fetchInternalShipment(trackingNumber.toUpperCase());
+  }
+
   const { data, error: invokeError } = await supabase.functions.invoke('fastway-track', {
     body: { trackingNumber },
   });
