@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Package, Calculator, Menu, X, Home, LayoutDashboard, LogOut, LogIn, Truck, Building2 } from "lucide-react";
+import { Package, Calculator, Menu, X, Home, LayoutDashboard, LogOut, LogIn, Truck, Building2, UserCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -24,6 +24,7 @@ const Navbar = () => {
   const roleItems: { path: string; label: string; icon: typeof Home }[] = [];
   if (roles.includes("driver")) roleItems.push({ path: "/driver", label: "My Jobs", icon: Truck });
   if (roles.includes("admin") || roles.includes("franchisee")) roleItems.push({ path: "/operations", label: "Operations", icon: Building2 });
+  if (roles.includes("admin")) roleItems.push({ path: "/admin/users", label: "Users", icon: UserCog });
 
   const navItems = user ? [...publicItems, ...authedItems, ...roleItems] : publicItems;
 
