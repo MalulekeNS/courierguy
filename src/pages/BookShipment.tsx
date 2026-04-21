@@ -65,10 +65,10 @@ const BookShipment = () => {
       });
       setChosen(null);
     }
-    setStep((s) => Math.min(4, (s + 1) as 1 | 2 | 3 | 4));
+    setStep((s) => (Math.min(4, s + 1) as 1 | 2 | 3 | 4));
   };
 
-  const goBack = () => setStep((s) => Math.max(1, (s - 1) as 1 | 2 | 3 | 4));
+  const goBack = () => setStep((s) => (Math.max(1, s - 1) as 1 | 2 | 3 | 4));
 
   const handleConfirm = async () => {
     if (!user || !chosen) return;
