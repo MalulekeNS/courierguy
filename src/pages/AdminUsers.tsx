@@ -11,7 +11,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, AppRole } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
-import { Search, RefreshCw, ShieldCheck, UserCog } from "lucide-react";
+import { Search, RefreshCw, ShieldCheck, UserCog, MailCheck, MailX, PhoneCall, PhoneOff } from "lucide-react";
 
 const ALL_ROLES: AppRole[] = ["customer", "driver", "franchisee", "admin"];
 
@@ -20,6 +20,15 @@ interface ProfileRow {
   full_name: string | null;
   phone: string | null;
   franchise_code: string | null;
+  created_at: string;
+}
+
+interface AuthInfo {
+  user_id: string;
+  email: string | null;
+  email_confirmed_at: string | null;
+  phone: string | null;
+  phone_confirmed_at: string | null;
   created_at: string;
 }
 
@@ -38,6 +47,7 @@ const roleColor: Record<AppRole, string> = {
 const AdminUsers = () => {
   const { user: me } = useAuth();
   const [profiles, setProfiles] = useState<ProfileRow[]>([]);
+  const [authInfo, setAuthInfo] = useState<Record<string, AuthInfo>>({});
   const [rolesByUser, setRolesByUser] = useState<Record<string, AppRole[]>>({});
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -45,12 +55,14 @@ const AdminUsers = () => {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [{ data: profs, error: pErr }, { data: roles, error: rErr }] = await Promise.all([
+    const [{ data: profs, error: pErr }, { data: roles, error: rErr }, { data: auths, error: aErr }] = await Promise.all([
       supabase.from("profiles").select("user_id, full_name, phone, franchise_code, created_at").order("created_at", { ascending: false }),
       supabase.from("user_roles").select("user_id, role"),
+      supabase.rpc("admin_list_users"),
     ]);
     if (pErr) toast({ title: "Failed to load users", description: pErr.message, variant: "destructive" });
     if (rErr) toast({ title: "Failed to load roles", description: rErr.message, variant: "destructive" });
+    if (aErr) toast({ title: "Failed to load auth info", description: aErr.message, variant: "destructive" });
 
     setProfiles((profs ?? []) as ProfileRow[]);
     const map: Record<string, AppRole[]> = {};
@@ -58,6 +70,9 @@ const AdminUsers = () => {
       (map[r.user_id] ||= []).push(r.role);
     }
     setRolesByUser(map);
+    const aMap: Record<string, AuthInfo> = {};
+    for (const a of ((auths ?? []) as AuthInfo[])) aMap[a.user_id] = a;
+    setAuthInfo(aMap);
     setLoading(false);
   }, []);
 
@@ -66,13 +81,19 @@ const AdminUsers = () => {
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return profiles;
-    return profiles.filter((p) =>
-      (p.full_name ?? "").toLowerCase().includes(q) ||
-      (p.phone ?? "").toLowerCase().includes(q) ||
-      (p.franchise_code ?? "").toLowerCase().includes(q) ||
-      p.user_id.toLowerCase().includes(q),
-    );
-  }, [profiles, search]);
+    return profiles.filter((p) => {
+      const a = authInfo[p.user_id];
+      return (
+        (p.full_name ?? "").toLowerCase().includes(q) ||
+        (p.phone ?? "").toLowerCase().includes(q) ||
+        (p.franchise_code ?? "").toLowerCase().includes(q) ||
+        p.user_id.toLowerCase().includes(q) ||
+        (a?.email ?? "").toLowerCase().includes(q)
+      );
+    });
+  }, [profiles, search, authInfo]);
+
+  const fmtDate = (s?: string | null) => s ? new Date(s).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) : "—";
 
   const toggleRole = async (userId: string, role: AppRole, currently: boolean) => {
     if (userId === me?.id && role === "admin" && currently) {
@@ -144,7 +165,10 @@ const AdminUsers = () => {
                   <TableHeader>
                     <TableRow>
                       <TableHead>User</TableHead>
+                      <TableHead>Email</TableHead>
                       <TableHead>Phone</TableHead>
+                      <TableHead>Verified</TableHead>
+                      <TableHead>Joined</TableHead>
                       <TableHead>Franchise</TableHead>
                       <TableHead>Roles</TableHead>
                     </TableRow>
@@ -152,6 +176,9 @@ const AdminUsers = () => {
                   <TableBody>
                     {filtered.map((p) => {
                       const userRoles = rolesByUser[p.user_id] ?? [];
+                      const a = authInfo[p.user_id];
+                      const emailVerified = !!a?.email_confirmed_at;
+                      const phoneVerified = !!a?.phone_confirmed_at;
                       return (
                         <TableRow key={p.user_id}>
                           <TableCell>
@@ -161,7 +188,27 @@ const AdminUsers = () => {
                             </div>
                             <div className="font-mono text-xs text-muted-foreground">{p.user_id.slice(0, 8)}…</div>
                           </TableCell>
-                          <TableCell className="text-sm">{p.phone || "—"}</TableCell>
+                          <TableCell className="text-sm">{a?.email || "—"}</TableCell>
+                          <TableCell className="text-sm">{p.phone || a?.phone || "—"}</TableCell>
+                          <TableCell>
+                            <div className="flex flex-col gap-1">
+                              <span
+                                className={`inline-flex items-center gap-1 text-xs ${emailVerified ? "text-success" : "text-muted-foreground"}`}
+                                title={emailVerified ? `Email verified ${fmtDate(a?.email_confirmed_at)}` : "Email not verified"}
+                              >
+                                {emailVerified ? <MailCheck className="h-3 w-3" /> : <MailX className="h-3 w-3" />}
+                                Email
+                              </span>
+                              <span
+                                className={`inline-flex items-center gap-1 text-xs ${phoneVerified ? "text-success" : "text-muted-foreground"}`}
+                                title={phoneVerified ? `Phone verified ${fmtDate(a?.phone_confirmed_at)}` : "Phone not verified"}
+                              >
+                                {phoneVerified ? <PhoneCall className="h-3 w-3" /> : <PhoneOff className="h-3 w-3" />}
+                                Phone
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-sm whitespace-nowrap">{fmtDate(a?.created_at ?? p.created_at)}</TableCell>
                           <TableCell className="text-sm">{p.franchise_code || "—"}</TableCell>
                           <TableCell>
                             <div className="flex flex-wrap gap-2">

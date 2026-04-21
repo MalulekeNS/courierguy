@@ -300,6 +300,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_list_users: {
+        Args: never
+        Returns: {
+          created_at: string
+          email: string
+          email_confirmed_at: string
+          phone: string
+          phone_confirmed_at: string
+          user_id: string
+        }[]
+      }
       generate_waybill: { Args: never; Returns: string }
       has_role: {
         Args: {
