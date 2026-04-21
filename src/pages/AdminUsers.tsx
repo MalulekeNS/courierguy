@@ -165,7 +165,10 @@ const AdminUsers = () => {
                   <TableHeader>
                     <TableRow>
                       <TableHead>User</TableHead>
+                      <TableHead>Email</TableHead>
                       <TableHead>Phone</TableHead>
+                      <TableHead>Verified</TableHead>
+                      <TableHead>Joined</TableHead>
                       <TableHead>Franchise</TableHead>
                       <TableHead>Roles</TableHead>
                     </TableRow>
@@ -173,6 +176,9 @@ const AdminUsers = () => {
                   <TableBody>
                     {filtered.map((p) => {
                       const userRoles = rolesByUser[p.user_id] ?? [];
+                      const a = authInfo[p.user_id];
+                      const emailVerified = !!a?.email_confirmed_at;
+                      const phoneVerified = !!a?.phone_confirmed_at;
                       return (
                         <TableRow key={p.user_id}>
                           <TableCell>
@@ -182,7 +188,27 @@ const AdminUsers = () => {
                             </div>
                             <div className="font-mono text-xs text-muted-foreground">{p.user_id.slice(0, 8)}…</div>
                           </TableCell>
-                          <TableCell className="text-sm">{p.phone || "—"}</TableCell>
+                          <TableCell className="text-sm">{a?.email || "—"}</TableCell>
+                          <TableCell className="text-sm">{p.phone || a?.phone || "—"}</TableCell>
+                          <TableCell>
+                            <div className="flex flex-col gap-1">
+                              <span
+                                className={`inline-flex items-center gap-1 text-xs ${emailVerified ? "text-success" : "text-muted-foreground"}`}
+                                title={emailVerified ? `Email verified ${fmtDate(a?.email_confirmed_at)}` : "Email not verified"}
+                              >
+                                {emailVerified ? <MailCheck className="h-3 w-3" /> : <MailX className="h-3 w-3" />}
+                                Email
+                              </span>
+                              <span
+                                className={`inline-flex items-center gap-1 text-xs ${phoneVerified ? "text-success" : "text-muted-foreground"}`}
+                                title={phoneVerified ? `Phone verified ${fmtDate(a?.phone_confirmed_at)}` : "Phone not verified"}
+                              >
+                                {phoneVerified ? <PhoneCall className="h-3 w-3" /> : <PhoneOff className="h-3 w-3" />}
+                                Phone
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-sm whitespace-nowrap">{fmtDate(a?.created_at ?? p.created_at)}</TableCell>
                           <TableCell className="text-sm">{p.franchise_code || "—"}</TableCell>
                           <TableCell>
                             <div className="flex flex-wrap gap-2">
