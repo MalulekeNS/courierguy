@@ -63,6 +63,13 @@ const AdminUsers = () => {
   const [busy, setBusy] = useState<string | null>(null);
   const [alertMsg, setAlertMsg] = useState<{ title: string; description: string } | null>(null);
   const showAlert = (title: string, description: string) => setAlertMsg({ title, description });
+  const [confirmAdd, setConfirmAdd] = useState<{
+    userId: string;
+    userName: string;
+    role: AppRole;
+    emailVerified: boolean;
+    phoneVerified: boolean;
+  } | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
