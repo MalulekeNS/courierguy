@@ -345,24 +345,52 @@ const AdminUsers = () => {
             <AlertDialogTitle className="text-center">
               Confirm {confirmAdd?.role} role
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-center">
-              You're about to grant the <span className="font-semibold text-foreground">{confirmAdd?.role}</span> role to{" "}
-              <span className="font-semibold text-foreground">{confirmAdd?.userName}</span>. This gives elevated access to operational data.
+            <AlertDialogDescription className="text-center" asChild>
+              <div>
+                You're about to grant the{" "}
+                <span className="font-semibold text-foreground">{confirmAdd?.role}</span> role to:
+                <div className="mt-2 rounded-md border bg-muted/40 p-2 text-foreground text-left">
+                  {confirmAdd?.userName ? (
+                    <div className="font-semibold">{confirmAdd.userName}</div>
+                  ) : (
+                    <div className="font-semibold italic text-muted-foreground">No display name on file</div>
+                  )}
+                  <div className="text-sm text-muted-foreground break-all">
+                    {confirmAdd?.email || "No email on record"}
+                  </div>
+                  {!confirmAdd?.hasProfile && (
+                    <div className="mt-1 text-xs text-amber-600 dark:text-amber-500">
+                      ⚠ Profile not yet created — user hasn't completed onboarding.
+                    </div>
+                  )}
+                </div>
+                <div className="mt-2 text-sm text-muted-foreground">
+                  This grants elevated access to operational data.
+                </div>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
 
           <div className="rounded-md border bg-muted/30 p-3 text-sm space-y-2">
-            <div className="font-medium text-xs uppercase tracking-wide text-muted-foreground">Verification status</div>
+            <div className="font-medium text-xs uppercase tracking-wide text-muted-foreground">
+              Role eligibility — {confirmAdd?.role}
+            </div>
             <div className={`flex items-center gap-2 ${confirmAdd?.emailVerified ? "text-success" : "text-destructive"}`}>
               {confirmAdd?.emailVerified ? <MailCheck className="h-4 w-4" /> : <MailX className="h-4 w-4" />}
               Email {confirmAdd?.emailVerified ? "confirmed" : "not confirmed"}
+              <span className="ml-auto text-xs text-muted-foreground">required</span>
             </div>
             <div className={`flex items-center gap-2 ${confirmAdd?.phoneVerified ? "text-success" : "text-muted-foreground"}`}>
               {confirmAdd?.phoneVerified ? <PhoneCall className="h-4 w-4" /> : <PhoneOff className="h-4 w-4" />}
               Phone {confirmAdd?.phoneVerified ? "confirmed" : "not confirmed"}
-              {confirmAdd?.role === "franchisee" && !confirmAdd?.phoneVerified && (
-                <span className="text-xs text-muted-foreground">(not required)</span>
-              )}
+              <span className="ml-auto text-xs text-muted-foreground">
+                {confirmAdd?.role === "driver" ? "required" : "optional"}
+              </span>
+            </div>
+            <div className="pt-1 text-xs text-muted-foreground border-t">
+              {confirmAdd?.role === "driver"
+                ? "Drivers need verified email and phone to receive job assignments."
+                : "Franchisees need a verified email to manage branch operations."}
             </div>
           </div>
 
