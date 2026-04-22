@@ -329,8 +329,10 @@ const AdminUsers = () => {
       <AlertDialog open={!!alertMsg} onOpenChange={(o) => !o && setAlertMsg(null)}>
         <AlertDialogContent className="sm:max-w-md">
           <AlertDialogHeader>
-            <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
-              <AlertTriangle className="h-6 w-6 text-destructive" />
+            <div className={`mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full ${alertMsg?.tone === "success" ? "bg-success/10" : "bg-destructive/10"}`}>
+              {alertMsg?.tone === "success"
+                ? <ShieldCheck className="h-6 w-6 text-success" />
+                : <AlertTriangle className="h-6 w-6 text-destructive" />}
             </div>
             <AlertDialogTitle className="text-center">{alertMsg?.title}</AlertDialogTitle>
             <AlertDialogDescription className="text-center">{alertMsg?.description}</AlertDialogDescription>
