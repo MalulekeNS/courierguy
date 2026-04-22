@@ -62,8 +62,9 @@ const AdminUsers = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
-  const [alertMsg, setAlertMsg] = useState<{ title: string; description: string } | null>(null);
-  const showAlert = (title: string, description: string) => setAlertMsg({ title, description });
+  const [alertMsg, setAlertMsg] = useState<{ title: string; description: string; tone?: "error" | "success" } | null>(null);
+  const showAlert = (title: string, description: string, tone: "error" | "success" = "error") =>
+    setAlertMsg({ title, description, tone });
   const [confirmAdd, setConfirmAdd] = useState<{
     userId: string;
     userName: string | null;
