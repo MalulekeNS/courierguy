@@ -11,7 +11,16 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, AppRole } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
-import { Search, RefreshCw, ShieldCheck, UserCog, MailCheck, MailX, PhoneCall, PhoneOff } from "lucide-react";
+import { Search, RefreshCw, ShieldCheck, UserCog, MailCheck, MailX, PhoneCall, PhoneOff, AlertTriangle } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const ALL_ROLES: AppRole[] = ["customer", "driver", "franchisee", "admin"];
 
