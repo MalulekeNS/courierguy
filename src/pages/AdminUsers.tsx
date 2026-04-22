@@ -331,6 +331,53 @@ const AdminUsers = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AlertDialog open={!!confirmAdd} onOpenChange={(o) => !o && setConfirmAdd(null)}>
+        <AlertDialogContent className="sm:max-w-md">
+          <AlertDialogHeader>
+            <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+              <ShieldAlert className="h-6 w-6 text-primary" />
+            </div>
+            <AlertDialogTitle className="text-center">
+              Confirm {confirmAdd?.role} role
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-center">
+              You're about to grant the <span className="font-semibold text-foreground">{confirmAdd?.role}</span> role to{" "}
+              <span className="font-semibold text-foreground">{confirmAdd?.userName}</span>. This gives elevated access to operational data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <div className="rounded-md border bg-muted/30 p-3 text-sm space-y-2">
+            <div className="font-medium text-xs uppercase tracking-wide text-muted-foreground">Verification status</div>
+            <div className={`flex items-center gap-2 ${confirmAdd?.emailVerified ? "text-success" : "text-destructive"}`}>
+              {confirmAdd?.emailVerified ? <MailCheck className="h-4 w-4" /> : <MailX className="h-4 w-4" />}
+              Email {confirmAdd?.emailVerified ? "confirmed" : "not confirmed"}
+            </div>
+            <div className={`flex items-center gap-2 ${confirmAdd?.phoneVerified ? "text-success" : "text-muted-foreground"}`}>
+              {confirmAdd?.phoneVerified ? <PhoneCall className="h-4 w-4" /> : <PhoneOff className="h-4 w-4" />}
+              Phone {confirmAdd?.phoneVerified ? "confirmed" : "not confirmed"}
+              {confirmAdd?.role === "franchisee" && !confirmAdd?.phoneVerified && (
+                <span className="text-xs text-muted-foreground">(not required)</span>
+              )}
+            </div>
+          </div>
+
+          <AlertDialogFooter className="sm:justify-center">
+            <AlertDialogCancel className="min-w-[100px]">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="min-w-[140px]"
+              onClick={async () => {
+                if (!confirmAdd) return;
+                const { userId, role } = confirmAdd;
+                setConfirmAdd(null);
+                await performToggle(userId, role, false);
+              }}
+            >
+              Confirm & assign
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Layout>
   );
 };
