@@ -164,7 +164,9 @@ const AdminUsers = () => {
       const profile = profiles.find((p) => p.user_id === userId);
       setConfirmAdd({
         userId,
-        userName: profile?.full_name || a?.email || userId.slice(0, 8),
+        userName: profile?.full_name?.trim() || null,
+        email: a?.email ?? null,
+        hasProfile: !!profile,
         role,
         emailVerified,
         phoneVerified,
