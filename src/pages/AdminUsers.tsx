@@ -236,17 +236,25 @@ const AdminUsers = () => {
                               {ALL_ROLES.map((role) => {
                                 const has = userRoles.includes(role);
                                 const id = `${p.user_id}:${role}`;
+                                const needsEmail = (role === "driver" || role === "franchisee") && !emailVerified;
+                                const needsPhone = role === "driver" && !phoneVerified;
+                                const blocked = !has && (needsEmail || needsPhone);
+                                const blockReason = needsEmail
+                                  ? "Requires verified email"
+                                  : needsPhone
+                                  ? "Requires verified phone"
+                                  : "";
                                 return (
                                   <button
                                     key={role}
                                     onClick={() => toggleRole(p.user_id, role, has)}
-                                    disabled={busy === id}
-                                    className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium transition-opacity disabled:opacity-50 ${
+                                    disabled={busy === id || blocked}
+                                    className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium transition-opacity disabled:opacity-50 disabled:cursor-not-allowed ${
                                       has ? roleColor[role] : "bg-muted text-muted-foreground hover:bg-muted/70"
                                     }`}
-                                    title={has ? `Click to remove ${role}` : `Click to add ${role}`}
+                                    title={blocked ? blockReason : has ? `Click to remove ${role}` : `Click to add ${role}`}
                                   >
-                                    {has ? "✓ " : "+ "}{role}
+                                    {has ? "✓ " : blocked ? "🔒 " : "+ "}{role}
                                   </button>
                                 );
                               })}
