@@ -116,8 +116,9 @@ const AdminUsers = () => {
 
   const fmtDate = (s?: string | null) => s ? new Date(s).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) : "—";
 
-  const performToggle = async (userId: string, role: AppRole, currently: boolean) => {
+  const performToggle = async (userId: string, role: AppRole, currently: boolean): Promise<boolean> => {
     setBusy(`${userId}:${role}`);
+    let ok = false;
     if (currently) {
       const { error } = await supabase.from("user_roles").delete().eq("user_id", userId).eq("role", role);
       if (error) {
@@ -125,6 +126,7 @@ const AdminUsers = () => {
       } else {
         setRolesByUser((prev) => ({ ...prev, [userId]: (prev[userId] ?? []).filter((r) => r !== role) }));
         toast({ title: "Role removed", description: `${role}` });
+        ok = true;
       }
     } else {
       const { error } = await supabase.from("user_roles").insert({ user_id: userId, role });
@@ -133,9 +135,11 @@ const AdminUsers = () => {
       } else {
         setRolesByUser((prev) => ({ ...prev, [userId]: [...(prev[userId] ?? []), role] }));
         toast({ title: "Role added", description: `${role}` });
+        ok = true;
       }
     }
     setBusy(null);
+    return ok;
   };
 
   const toggleRole = async (userId: string, role: AppRole, currently: boolean) => {
