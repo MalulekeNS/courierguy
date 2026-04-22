@@ -62,8 +62,9 @@ const AdminUsers = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
-  const [alertMsg, setAlertMsg] = useState<{ title: string; description: string } | null>(null);
-  const showAlert = (title: string, description: string) => setAlertMsg({ title, description });
+  const [alertMsg, setAlertMsg] = useState<{ title: string; description: string; tone?: "error" | "success" } | null>(null);
+  const showAlert = (title: string, description: string, tone: "error" | "success" = "error") =>
+    setAlertMsg({ title, description, tone });
   const [confirmAdd, setConfirmAdd] = useState<{
     userId: string;
     userName: string | null;
@@ -116,8 +117,9 @@ const AdminUsers = () => {
 
   const fmtDate = (s?: string | null) => s ? new Date(s).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) : "—";
 
-  const performToggle = async (userId: string, role: AppRole, currently: boolean) => {
+  const performToggle = async (userId: string, role: AppRole, currently: boolean): Promise<boolean> => {
     setBusy(`${userId}:${role}`);
+    let ok = false;
     if (currently) {
       const { error } = await supabase.from("user_roles").delete().eq("user_id", userId).eq("role", role);
       if (error) {
@@ -125,6 +127,7 @@ const AdminUsers = () => {
       } else {
         setRolesByUser((prev) => ({ ...prev, [userId]: (prev[userId] ?? []).filter((r) => r !== role) }));
         toast({ title: "Role removed", description: `${role}` });
+        ok = true;
       }
     } else {
       const { error } = await supabase.from("user_roles").insert({ user_id: userId, role });
@@ -133,9 +136,11 @@ const AdminUsers = () => {
       } else {
         setRolesByUser((prev) => ({ ...prev, [userId]: [...(prev[userId] ?? []), role] }));
         toast({ title: "Role added", description: `${role}` });
+        ok = true;
       }
     }
     setBusy(null);
+    return ok;
   };
 
   const toggleRole = async (userId: string, role: AppRole, currently: boolean) => {
@@ -324,8 +329,10 @@ const AdminUsers = () => {
       <AlertDialog open={!!alertMsg} onOpenChange={(o) => !o && setAlertMsg(null)}>
         <AlertDialogContent className="sm:max-w-md">
           <AlertDialogHeader>
-            <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
-              <AlertTriangle className="h-6 w-6 text-destructive" />
+            <div className={`mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full ${alertMsg?.tone === "success" ? "bg-success/10" : "bg-destructive/10"}`}>
+              {alertMsg?.tone === "success"
+                ? <ShieldCheck className="h-6 w-6 text-success" />
+                : <AlertTriangle className="h-6 w-6 text-destructive" />}
             </div>
             <AlertDialogTitle className="text-center">{alertMsg?.title}</AlertDialogTitle>
             <AlertDialogDescription className="text-center">{alertMsg?.description}</AlertDialogDescription>
@@ -400,9 +407,17 @@ const AdminUsers = () => {
               className="min-w-[140px]"
               onClick={async () => {
                 if (!confirmAdd) return;
-                const { userId, role } = confirmAdd;
+                const { userId, role, userName, email } = confirmAdd;
+                const ok = await performToggle(userId, role, false);
                 setConfirmAdd(null);
-                await performToggle(userId, role, false);
+                if (ok) {
+                  showAlert(
+                    "Role assigned",
+                    `${role.charAt(0).toUpperCase() + role.slice(1)} role granted to ${userName || email || "user"}.`,
+                    "success"
+                  );
+                  load();
+                }
               }}
             >
               Confirm & assign
