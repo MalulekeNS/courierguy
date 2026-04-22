@@ -295,6 +295,21 @@ const AdminUsers = () => {
           </CardContent>
         </Card>
       </div>
+
+      <AlertDialog open={!!alertMsg} onOpenChange={(o) => !o && setAlertMsg(null)}>
+        <AlertDialogContent className="sm:max-w-md">
+          <AlertDialogHeader>
+            <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+              <AlertTriangle className="h-6 w-6 text-destructive" />
+            </div>
+            <AlertDialogTitle className="text-center">{alertMsg?.title}</AlertDialogTitle>
+            <AlertDialogDescription className="text-center">{alertMsg?.description}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="sm:justify-center">
+            <AlertDialogAction onClick={() => setAlertMsg(null)} className="min-w-[100px]">OK</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Layout>
   );
 };
