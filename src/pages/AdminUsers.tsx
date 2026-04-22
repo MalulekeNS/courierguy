@@ -108,7 +108,7 @@ const AdminUsers = () => {
 
   const toggleRole = async (userId: string, role: AppRole, currently: boolean) => {
     if (userId === me?.id && role === "admin" && currently) {
-      toast({ title: "Blocked", description: "You can't remove your own admin role.", variant: "destructive" });
+      showAlert("Action blocked", "You can't remove your own admin role.");
       return;
     }
     if (!currently && (role === "driver" || role === "franchisee")) {
@@ -116,19 +116,17 @@ const AdminUsers = () => {
       const emailVerified = !!a?.email_confirmed_at;
       const phoneVerified = !!a?.phone_confirmed_at;
       if (!emailVerified) {
-        toast({
-          title: "Verification required",
-          description: `Cannot assign "${role}" — user must verify their email address first.`,
-          variant: "destructive",
-        });
+        showAlert(
+          "Verification required",
+          `Cannot assign "${role}" — this user must verify their email address first.`
+        );
         return;
       }
       if (role === "driver" && !phoneVerified) {
-        toast({
-          title: "Verification required",
-          description: `Cannot assign "driver" — user must verify their phone number first.`,
-          variant: "destructive",
-        });
+        showAlert(
+          "Verification required",
+          `Cannot assign "driver" — this user must verify their phone number first.`
+        );
         return;
       }
     }
