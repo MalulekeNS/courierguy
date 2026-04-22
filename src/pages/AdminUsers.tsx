@@ -11,7 +11,16 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, AppRole } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
-import { Search, RefreshCw, ShieldCheck, UserCog, MailCheck, MailX, PhoneCall, PhoneOff } from "lucide-react";
+import { Search, RefreshCw, ShieldCheck, UserCog, MailCheck, MailX, PhoneCall, PhoneOff, AlertTriangle } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const ALL_ROLES: AppRole[] = ["customer", "driver", "franchisee", "admin"];
 
@@ -52,6 +61,8 @@ const AdminUsers = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
+  const [alertMsg, setAlertMsg] = useState<{ title: string; description: string } | null>(null);
+  const showAlert = (title: string, description: string) => setAlertMsg({ title, description });
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -97,7 +108,7 @@ const AdminUsers = () => {
 
   const toggleRole = async (userId: string, role: AppRole, currently: boolean) => {
     if (userId === me?.id && role === "admin" && currently) {
-      toast({ title: "Blocked", description: "You can't remove your own admin role.", variant: "destructive" });
+      showAlert("Action blocked", "You can't remove your own admin role.");
       return;
     }
     if (!currently && (role === "driver" || role === "franchisee")) {
@@ -105,19 +116,17 @@ const AdminUsers = () => {
       const emailVerified = !!a?.email_confirmed_at;
       const phoneVerified = !!a?.phone_confirmed_at;
       if (!emailVerified) {
-        toast({
-          title: "Verification required",
-          description: `Cannot assign "${role}" — user must verify their email address first.`,
-          variant: "destructive",
-        });
+        showAlert(
+          "Verification required",
+          `Cannot assign "${role}" — this user must verify their email address first.`
+        );
         return;
       }
       if (role === "driver" && !phoneVerified) {
-        toast({
-          title: "Verification required",
-          description: `Cannot assign "driver" — user must verify their phone number first.`,
-          variant: "destructive",
-        });
+        showAlert(
+          "Verification required",
+          `Cannot assign "driver" — this user must verify their phone number first.`
+        );
         return;
       }
     }
@@ -232,32 +241,48 @@ const AdminUsers = () => {
                           <TableCell className="text-sm whitespace-nowrap">{fmtDate(a?.created_at ?? p.created_at)}</TableCell>
                           <TableCell className="text-sm">{p.franchise_code || "—"}</TableCell>
                           <TableCell>
-                            <div className="flex flex-wrap gap-2">
-                              {ALL_ROLES.map((role) => {
-                                const has = userRoles.includes(role);
-                                const id = `${p.user_id}:${role}`;
-                                const needsEmail = (role === "driver" || role === "franchisee") && !emailVerified;
-                                const needsPhone = role === "driver" && !phoneVerified;
-                                const blocked = !has && (needsEmail || needsPhone);
-                                const blockReason = needsEmail
-                                  ? "Requires verified email"
-                                  : needsPhone
-                                  ? "Requires verified phone"
-                                  : "";
-                                return (
-                                  <button
-                                    key={role}
-                                    onClick={() => toggleRole(p.user_id, role, has)}
-                                    disabled={busy === id || blocked}
-                                    className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium transition-opacity disabled:opacity-50 disabled:cursor-not-allowed ${
-                                      has ? roleColor[role] : "bg-muted text-muted-foreground hover:bg-muted/70"
-                                    }`}
-                                    title={blocked ? blockReason : has ? `Click to remove ${role}` : `Click to add ${role}`}
-                                  >
-                                    {has ? "✓ " : blocked ? "🔒 " : "+ "}{role}
-                                  </button>
-                                );
-                              })}
+                            <div className="flex flex-col gap-2">
+                              <div className="flex flex-wrap gap-2">
+                                {ALL_ROLES.map((role) => {
+                                  const has = userRoles.includes(role);
+                                  const id = `${p.user_id}:${role}`;
+                                  const needsEmail = (role === "driver" || role === "franchisee") && !emailVerified;
+                                  const needsPhone = role === "driver" && !phoneVerified;
+                                  const blocked = !has && (needsEmail || needsPhone);
+                                  const blockReason = needsEmail
+                                    ? "Requires verified email"
+                                    : needsPhone
+                                    ? "Requires verified phone"
+                                    : "";
+                                  return (
+                                    <button
+                                      key={role}
+                                      onClick={() => toggleRole(p.user_id, role, has)}
+                                      disabled={busy === id}
+                                      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium transition-opacity disabled:opacity-50 ${
+                                        has
+                                          ? roleColor[role]
+                                          : blocked
+                                          ? "bg-muted/50 text-muted-foreground/70 hover:bg-muted/60"
+                                          : "bg-muted text-muted-foreground hover:bg-muted/70"
+                                      }`}
+                                      title={blocked ? blockReason : has ? `Click to remove ${role}` : `Click to add ${role}`}
+                                    >
+                                      {has ? "✓ " : blocked ? "🔒 " : "+ "}{role}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                              <div className="text-[11px] leading-snug space-y-0.5">
+                                <div className={`inline-flex items-center gap-1 ${emailVerified ? "text-success" : "text-destructive"}`}>
+                                  {emailVerified ? <MailCheck className="h-3 w-3" /> : <MailX className="h-3 w-3" />}
+                                  {emailVerified ? "Email confirmed" : "Email not confirmed — driver & franchisee locked"}
+                                </div>
+                                <div className={`flex items-center gap-1 ${phoneVerified ? "text-success" : "text-destructive"}`}>
+                                  {phoneVerified ? <PhoneCall className="h-3 w-3" /> : <PhoneOff className="h-3 w-3" />}
+                                  {phoneVerified ? "Phone confirmed" : "Phone not confirmed — driver locked"}
+                                </div>
+                              </div>
                             </div>
                           </TableCell>
                         </TableRow>
@@ -270,6 +295,21 @@ const AdminUsers = () => {
           </CardContent>
         </Card>
       </div>
+
+      <AlertDialog open={!!alertMsg} onOpenChange={(o) => !o && setAlertMsg(null)}>
+        <AlertDialogContent className="sm:max-w-md">
+          <AlertDialogHeader>
+            <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+              <AlertTriangle className="h-6 w-6 text-destructive" />
+            </div>
+            <AlertDialogTitle className="text-center">{alertMsg?.title}</AlertDialogTitle>
+            <AlertDialogDescription className="text-center">{alertMsg?.description}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="sm:justify-center">
+            <AlertDialogAction onClick={() => setAlertMsg(null)} className="min-w-[100px]">OK</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Layout>
   );
 };
