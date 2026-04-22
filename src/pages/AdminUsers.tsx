@@ -11,10 +11,11 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, AppRole } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
-import { Search, RefreshCw, ShieldCheck, UserCog, MailCheck, MailX, PhoneCall, PhoneOff, AlertTriangle } from "lucide-react";
+import { Search, RefreshCw, ShieldCheck, UserCog, MailCheck, MailX, PhoneCall, PhoneOff, AlertTriangle, ShieldAlert } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
+  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
@@ -63,6 +64,13 @@ const AdminUsers = () => {
   const [busy, setBusy] = useState<string | null>(null);
   const [alertMsg, setAlertMsg] = useState<{ title: string; description: string } | null>(null);
   const showAlert = (title: string, description: string) => setAlertMsg({ title, description });
+  const [confirmAdd, setConfirmAdd] = useState<{
+    userId: string;
+    userName: string;
+    role: AppRole;
+    emailVerified: boolean;
+    phoneVerified: boolean;
+  } | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -106,6 +114,28 @@ const AdminUsers = () => {
 
   const fmtDate = (s?: string | null) => s ? new Date(s).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) : "—";
 
+  const performToggle = async (userId: string, role: AppRole, currently: boolean) => {
+    setBusy(`${userId}:${role}`);
+    if (currently) {
+      const { error } = await supabase.from("user_roles").delete().eq("user_id", userId).eq("role", role);
+      if (error) {
+        toast({ title: "Could not remove role", description: error.message, variant: "destructive" });
+      } else {
+        setRolesByUser((prev) => ({ ...prev, [userId]: (prev[userId] ?? []).filter((r) => r !== role) }));
+        toast({ title: "Role removed", description: `${role}` });
+      }
+    } else {
+      const { error } = await supabase.from("user_roles").insert({ user_id: userId, role });
+      if (error) {
+        toast({ title: "Could not add role", description: error.message, variant: "destructive" });
+      } else {
+        setRolesByUser((prev) => ({ ...prev, [userId]: [...(prev[userId] ?? []), role] }));
+        toast({ title: "Role added", description: `${role}` });
+      }
+    }
+    setBusy(null);
+  };
+
   const toggleRole = async (userId: string, role: AppRole, currently: boolean) => {
     if (userId === me?.id && role === "admin" && currently) {
       showAlert("Action blocked", "You can't remove your own admin role.");
@@ -129,26 +159,17 @@ const AdminUsers = () => {
         );
         return;
       }
+      const profile = profiles.find((p) => p.user_id === userId);
+      setConfirmAdd({
+        userId,
+        userName: profile?.full_name || a?.email || userId.slice(0, 8),
+        role,
+        emailVerified,
+        phoneVerified,
+      });
+      return;
     }
-    setBusy(`${userId}:${role}`);
-    if (currently) {
-      const { error } = await supabase.from("user_roles").delete().eq("user_id", userId).eq("role", role);
-      if (error) {
-        toast({ title: "Could not remove role", description: error.message, variant: "destructive" });
-      } else {
-        setRolesByUser((prev) => ({ ...prev, [userId]: (prev[userId] ?? []).filter((r) => r !== role) }));
-        toast({ title: "Role removed", description: `${role}` });
-      }
-    } else {
-      const { error } = await supabase.from("user_roles").insert({ user_id: userId, role });
-      if (error) {
-        toast({ title: "Could not add role", description: error.message, variant: "destructive" });
-      } else {
-        setRolesByUser((prev) => ({ ...prev, [userId]: [...(prev[userId] ?? []), role] }));
-        toast({ title: "Role added", description: `${role}` });
-      }
-    }
-    setBusy(null);
+    await performToggle(userId, role, currently);
   };
 
   return (
@@ -307,6 +328,53 @@ const AdminUsers = () => {
           </AlertDialogHeader>
           <AlertDialogFooter className="sm:justify-center">
             <AlertDialogAction onClick={() => setAlertMsg(null)} className="min-w-[100px]">OK</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!confirmAdd} onOpenChange={(o) => !o && setConfirmAdd(null)}>
+        <AlertDialogContent className="sm:max-w-md">
+          <AlertDialogHeader>
+            <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+              <ShieldAlert className="h-6 w-6 text-primary" />
+            </div>
+            <AlertDialogTitle className="text-center">
+              Confirm {confirmAdd?.role} role
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-center">
+              You're about to grant the <span className="font-semibold text-foreground">{confirmAdd?.role}</span> role to{" "}
+              <span className="font-semibold text-foreground">{confirmAdd?.userName}</span>. This gives elevated access to operational data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <div className="rounded-md border bg-muted/30 p-3 text-sm space-y-2">
+            <div className="font-medium text-xs uppercase tracking-wide text-muted-foreground">Verification status</div>
+            <div className={`flex items-center gap-2 ${confirmAdd?.emailVerified ? "text-success" : "text-destructive"}`}>
+              {confirmAdd?.emailVerified ? <MailCheck className="h-4 w-4" /> : <MailX className="h-4 w-4" />}
+              Email {confirmAdd?.emailVerified ? "confirmed" : "not confirmed"}
+            </div>
+            <div className={`flex items-center gap-2 ${confirmAdd?.phoneVerified ? "text-success" : "text-muted-foreground"}`}>
+              {confirmAdd?.phoneVerified ? <PhoneCall className="h-4 w-4" /> : <PhoneOff className="h-4 w-4" />}
+              Phone {confirmAdd?.phoneVerified ? "confirmed" : "not confirmed"}
+              {confirmAdd?.role === "franchisee" && !confirmAdd?.phoneVerified && (
+                <span className="text-xs text-muted-foreground">(not required)</span>
+              )}
+            </div>
+          </div>
+
+          <AlertDialogFooter className="sm:justify-center">
+            <AlertDialogCancel className="min-w-[100px]">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="min-w-[140px]"
+              onClick={async () => {
+                if (!confirmAdd) return;
+                const { userId, role } = confirmAdd;
+                setConfirmAdd(null);
+                await performToggle(userId, role, false);
+              }}
+            >
+              Confirm & assign
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
