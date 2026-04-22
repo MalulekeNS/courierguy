@@ -100,6 +100,27 @@ const AdminUsers = () => {
       toast({ title: "Blocked", description: "You can't remove your own admin role.", variant: "destructive" });
       return;
     }
+    if (!currently && (role === "driver" || role === "franchisee")) {
+      const a = authInfo[userId];
+      const emailVerified = !!a?.email_confirmed_at;
+      const phoneVerified = !!a?.phone_confirmed_at;
+      if (!emailVerified) {
+        toast({
+          title: "Verification required",
+          description: `Cannot assign "${role}" — user must verify their email address first.`,
+          variant: "destructive",
+        });
+        return;
+      }
+      if (role === "driver" && !phoneVerified) {
+        toast({
+          title: "Verification required",
+          description: `Cannot assign "driver" — user must verify their phone number first.`,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
     setBusy(`${userId}:${role}`);
     if (currently) {
       const { error } = await supabase.from("user_roles").delete().eq("user_id", userId).eq("role", role);
