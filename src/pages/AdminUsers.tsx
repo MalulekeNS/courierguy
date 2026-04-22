@@ -359,7 +359,7 @@ const AdminUsers = () => {
                     {confirmAdd?.email || "No email on record"}
                   </div>
                   {!confirmAdd?.hasProfile && (
-                    <div className="mt-1 text-xs text-amber-600 dark:text-amber-500">
+                    <div className="mt-1 text-xs text-destructive">
                       ⚠ Profile not yet created — user hasn't completed onboarding.
                     </div>
                   )}
