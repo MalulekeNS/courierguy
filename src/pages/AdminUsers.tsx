@@ -405,9 +405,17 @@ const AdminUsers = () => {
               className="min-w-[140px]"
               onClick={async () => {
                 if (!confirmAdd) return;
-                const { userId, role } = confirmAdd;
+                const { userId, role, userName, email } = confirmAdd;
+                const ok = await performToggle(userId, role, false);
                 setConfirmAdd(null);
-                await performToggle(userId, role, false);
+                if (ok) {
+                  showAlert(
+                    "Role assigned",
+                    `${role.charAt(0).toUpperCase() + role.slice(1)} role granted to ${userName || email || "user"}.`,
+                    "success"
+                  );
+                  load();
+                }
               }}
             >
               Confirm & assign
