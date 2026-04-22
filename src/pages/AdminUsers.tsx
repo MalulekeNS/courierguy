@@ -113,6 +113,28 @@ const AdminUsers = () => {
 
   const fmtDate = (s?: string | null) => s ? new Date(s).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) : "—";
 
+  const performToggle = async (userId: string, role: AppRole, currently: boolean) => {
+    setBusy(`${userId}:${role}`);
+    if (currently) {
+      const { error } = await supabase.from("user_roles").delete().eq("user_id", userId).eq("role", role);
+      if (error) {
+        toast({ title: "Could not remove role", description: error.message, variant: "destructive" });
+      } else {
+        setRolesByUser((prev) => ({ ...prev, [userId]: (prev[userId] ?? []).filter((r) => r !== role) }));
+        toast({ title: "Role removed", description: `${role}` });
+      }
+    } else {
+      const { error } = await supabase.from("user_roles").insert({ user_id: userId, role });
+      if (error) {
+        toast({ title: "Could not add role", description: error.message, variant: "destructive" });
+      } else {
+        setRolesByUser((prev) => ({ ...prev, [userId]: [...(prev[userId] ?? []), role] }));
+        toast({ title: "Role added", description: `${role}` });
+      }
+    }
+    setBusy(null);
+  };
+
   const toggleRole = async (userId: string, role: AppRole, currently: boolean) => {
     if (userId === me?.id && role === "admin" && currently) {
       showAlert("Action blocked", "You can't remove your own admin role.");
@@ -136,26 +158,17 @@ const AdminUsers = () => {
         );
         return;
       }
+      const profile = profiles.find((p) => p.user_id === userId);
+      setConfirmAdd({
+        userId,
+        userName: profile?.full_name || a?.email || userId.slice(0, 8),
+        role,
+        emailVerified,
+        phoneVerified,
+      });
+      return;
     }
-    setBusy(`${userId}:${role}`);
-    if (currently) {
-      const { error } = await supabase.from("user_roles").delete().eq("user_id", userId).eq("role", role);
-      if (error) {
-        toast({ title: "Could not remove role", description: error.message, variant: "destructive" });
-      } else {
-        setRolesByUser((prev) => ({ ...prev, [userId]: (prev[userId] ?? []).filter((r) => r !== role) }));
-        toast({ title: "Role removed", description: `${role}` });
-      }
-    } else {
-      const { error } = await supabase.from("user_roles").insert({ user_id: userId, role });
-      if (error) {
-        toast({ title: "Could not add role", description: error.message, variant: "destructive" });
-      } else {
-        setRolesByUser((prev) => ({ ...prev, [userId]: [...(prev[userId] ?? []), role] }));
-        toast({ title: "Role added", description: `${role}` });
-      }
-    }
-    setBusy(null);
+    await performToggle(userId, role, currently);
   };
 
   return (
