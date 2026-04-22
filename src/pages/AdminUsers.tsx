@@ -66,7 +66,9 @@ const AdminUsers = () => {
   const showAlert = (title: string, description: string) => setAlertMsg({ title, description });
   const [confirmAdd, setConfirmAdd] = useState<{
     userId: string;
-    userName: string;
+    userName: string | null;
+    email: string | null;
+    hasProfile: boolean;
     role: AppRole;
     emailVerified: boolean;
     phoneVerified: boolean;
